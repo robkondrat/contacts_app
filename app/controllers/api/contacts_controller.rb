@@ -1,12 +1,19 @@
 class Api::ContactsController < ApplicationController
+
+
   def index
-    @contacts = Contact.all
-    render "index.json.jb"
+    if current_user
+      @contacts = current_user.contacts
+      render "index.json.jb"
+    else
+      render json: {message: "Current user not authorized"}
+    end
   end
 
   def create
     @contact = Contact.new(
                           {
+                            user_id: current_user.id,
                             first_name: params[:first_name],
                             middle_name: params[:middle_name],
                             last_name: params[:last_name],
@@ -15,13 +22,17 @@ class Api::ContactsController < ApplicationController
                             bio: params[:bio]
                           }
                             )
-    @contact.save
-    render 'show.json.jb'
+    if @contact.save
+      render 'show.json.jb'
+    else
+      render json: {errors: @contact.errors.full_messages}, status: :unprocessable_entity
+    end
   end
 
   def show
-    @contact = Contact.find(params[:id]) 
-    render "show.json.jb"   
+    if current_user
+      @contact = Contact.find(params[:id]) 
+      render "show.json.jb" 
   end
 
   def update
@@ -34,8 +45,11 @@ class Api::ContactsController < ApplicationController
     @contact.phone_number = params[:phone_number] || @contact.phone_number
     @contact.bio = params[:bio] || @contact.bio
 
-    @contact.save
-    render "show.json.jb"
+    if @contact.save
+      render "show.json.jb"
+    else
+      render json: {errors: @contact.errors.full_messages}, status: :unprocessable_entity
+    end
   end
 
   def destroy
