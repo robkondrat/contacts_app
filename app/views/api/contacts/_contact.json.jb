@@ -1,10 +1,12 @@
   {
     id: contact.id,
-    user: contact.user,
+    user: ( render partial: "api/users/user.json.jb", locals: {user: contact.user} ),
     first_name: contact.first_name,
+    group: contact.groups.map { |group| group.name },
     middle_name: contact.middle_name,
     last_name: contact.last_name,
     email: contact.email,
     phone_number: contact.japan_number,
+    groups: contact.groups.map { |group| render partial: "api/groups/group.json.jb", locals: {group: group} },
     bio: contact.bio
   }
